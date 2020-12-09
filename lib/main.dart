@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:inventory_management/components/menu.dart';
 
 void main() {
   runApp(App());
 }
 
 class App extends StatelessWidget {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -33,16 +33,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add_alert),
-            tooltip: 'Add Product',
-            onPressed: () {},
-          ),
-        ],
-      ),
+      appBar: Menu(title: widget.title),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
