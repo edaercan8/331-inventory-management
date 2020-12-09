@@ -28,9 +28,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-
-  void _addProduct() {
-  }
+  void _addProduct() {}
 
   @override
   Widget build(BuildContext context) {
@@ -72,6 +70,22 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            DataTable(
+              columns: [
+                DataColumn(label: Text('Name')),
+                DataColumn(label: Text('Stock Quantity'), numeric: true),
+                DataColumn( label: Text('Order Quantity'), numeric: true),
+              ],
+              rows: const <DataRow>[
+                DataRow(
+                  cells: <DataCell>[
+                    DataCell(Text('Placeholder Product')),
+                    DataCell(Text('19')),
+                    DataCell(Text('0')),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
       ),
