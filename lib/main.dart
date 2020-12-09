@@ -1,85 +1,66 @@
 import 'package:flutter/material.dart';
-import 'package:inventory_management/components/menu.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:inventory_management/views/product_form_page.dart';
+import 'package:inventory_management/views/product_list_page.dart';
+import 'package:inventory_management/components/app_layout.dart';
 
 void main() {
   runApp(App());
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Medical Inventory Manager',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HomePage(title: 'Medical Inventory Manager'),
-    );
+  _AppState createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  final Future<FirebaseApp> _initialization = Firebase.initializeApp();
+
+  final String title = 'Medical Inventory Manager';
+
+  bool formVisible = false;
+
+  void setFormVisible(bool state) {
+    setState(() {
+      this.formVisible = state;
+    });
   }
-}
-
-class HomePage extends StatefulWidget {
-  HomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  void _addProduct() {}
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: Menu(title: widget.title),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: const <Widget>[
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue,
+    return FutureBuilder(
+      // Initialize FlutterFire:
+      future: _initialization,
+      builder: (context, snapshot) {
+        // Check for errors
+        if (snapshot.hasError) {
+          return Text("Error!");
+        }
+
+        // Once complete, show your application
+        if (snapshot.connectionState == ConnectionState.done) {
+          return MaterialApp(
+            title: this.title,
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            home: AppLayout(
+              setFormVisible: this.setFormVisible,
+              body: Navigator(
+                pages: [
+                  ProductListPage(),
+                  if (this.formVisible)
+                    ProductFormPage(setFormVisible: this.setFormVisible),
+                ],
+                onPopPage: (route, result) => route.didPop(result),
               ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                ),
-              ),
             ),
-            ListTile(
-              leading: Icon(Icons.list),
-              title: Text('Products'),
-            ),
-          ],
-        ),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            DataTable(
-              columns: [
-                DataColumn(label: Text('Name')),
-                DataColumn(label: Text('Stock Quantity'), numeric: true),
-                DataColumn( label: Text('Order Quantity'), numeric: true),
-              ],
-              rows: const <DataRow>[
-                DataRow(
-                  cells: <DataCell>[
-                    DataCell(Text('Placeholder Product')),
-                    DataCell(Text('19')),
-                    DataCell(Text('0')),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+          );
+        }
+
+        // Otherwise, show something whilst waiting for initialization to complete
+        return Text('Loading...');
+      },
     );
   }
 }
