@@ -34,6 +34,7 @@ class ProductList extends StatelessWidget {
           return DataTable(
             columns: [
               DataColumn(label: Text('Name')),
+              DataColumn(label: Text('Barcode')),
               DataColumn(label: Text('Stock Quantity'), numeric: true),
               DataColumn(label: Text('Order Quantity'), numeric: true),
             ],
@@ -41,6 +42,7 @@ class ProductList extends StatelessWidget {
               return DataRow(
                 cells: <DataCell>[
                   DataCell(Text(document.data()['name'])),
+		  DataCell(Text(document.data()['barcode'])),
                   DataCell(Text(document.data()['quantity'].toString())),
                   DataCell(Text(document.data()['order'].toString())),
                 ],

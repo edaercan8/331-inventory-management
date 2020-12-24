@@ -5,13 +5,16 @@ import 'package:inventory_management/components/app_drawer.dart';
 class AppLayout extends StatelessWidget {
   final Widget body;
   final Function setFormVisible;
+  final Function scanBarcodeNormal;
 
-  AppLayout({this.body, this.setFormVisible}) : super();
+  AppLayout({this.body, this.setFormVisible, this.scanBarcodeNormal}) : super();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppMenu(setFormVisible: this.setFormVisible),
+      appBar: AppMenu(
+          setFormVisible: this.setFormVisible,
+          scanBarcodeNormal: this.scanBarcodeNormal),
       drawer: AppDrawer(),
       body: Center(
         child: Container(

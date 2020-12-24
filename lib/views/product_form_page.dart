@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+
 class ProductFormPage extends Page {
   final Function setFormVisible;
   ProductFormPage({this.setFormVisible})
@@ -28,15 +30,38 @@ class ProductForm extends StatefulWidget {
 class _FormData {
   String name;
   int quantity;
+  String barcode = '';
 }
 
 class _ProductFormState extends State<ProductForm> {
   final _formKey = GlobalKey<FormState>();
   _FormData _data = _FormData();
   final Function setFormVisible;
+  var textController = new TextEditingController();
   String name;
 
   _ProductFormState({this.setFormVisible}) : super();
+
+  Future<void> scanBarcodeNormal() async {
+    String barcodeScanRes;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+          "#ff6666", "Cancel", true, ScanMode.BARCODE);
+      print(barcodeScanRes);
+    } on PlatformException {
+      barcodeScanRes = 'Failed to get platform version.';
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      this.textController.text = barcodeScanRes;
+    });
+  }
 
   Widget build(BuildContext context) {
     return Form(
@@ -77,32 +102,57 @@ class _ProductFormState extends State<ProductForm> {
                   this._data.quantity = num.tryParse(value);
                 }),
           ),
+          Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: TextFormField(
+                decoration: const InputDecoration(
+                  hintText: 'Scan the Product\'s Barcode',
+                ),
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return 'Field required';
+                  }
+                  return null;
+                },
+                controller: this.textController,
+                onSaved: (String value) {
+                  this._data.barcode = value;
+                }),
+          ),
           Row(
             children: <Widget>[
               ElevatedButton(
-                onPressed: () {
-                  // Validate returns true if the form is valid, otherwise false.
-                  if (_formKey.currentState.validate()) {
-                    _formKey.currentState.save();
-                    CollectionReference products =
-                        FirebaseFirestore.instance.collection('products');
+                onPressed: () => this.scanBarcodeNormal(),
+                child: Text('Scan'),
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Validate returns true if the form is valid, otherwise false.
+                    if (_formKey.currentState.validate()) {
+                      _formKey.currentState.save();
+                      CollectionReference products =
+                          FirebaseFirestore.instance.collection('products');
 
-                    Future<void> addProduct() {
-                      return products
-                          .add({
-                            'name': this._data.name,
-			    'quantity': this._data.quantity,
-			    'order': 0,
-                          })
-                          .then((value) => this.setFormVisible(false))
-                          .catchError((error) =>
-                              print("Failed to add product: $error"));
+                      Future<void> addProduct() {
+                        return products
+                            .add({
+                              'name': this._data.name,
+                              'quantity': this._data.quantity,
+			      'barcode': this._data.barcode,
+                              'order': 0,
+                            })
+                            .then((value) => this.setFormVisible(false))
+                            .catchError((error) =>
+                                print("Failed to add product: $error"));
+                      }
+
+                      addProduct();
                     }
-
-                    addProduct();
-                  }
-                },
-                child: Text('Add'),
+                  },
+                  child: Text('Add'),
+                ),
               ),
               Padding(
                 padding: EdgeInsets.only(left: 10),
